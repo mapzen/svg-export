@@ -41,6 +41,18 @@ function createControls () {
     entering = layerToggle.enter().append("li").attr("class","layer-name");
     entering.append("input").attr("type","checkbox");
     entering.append("span").text(function(d){ return d.layer; });
+    entering.append("span").attr("class","toggle").text("toggle all");
+
+    layerToggle.select(".toggle")
+      .style("display",function(d){ return (d.display && d.types.length) ? "block" : "none"; })
+      .on("click",function(d){
+        var display = d.types[0].display;
+        d.types.forEach(function(t){
+          t.display = !display;
+        });
+        createControls();
+        d3.selectAll(".tile").each(renderTiles);
+      });
     
     layerToggle.select("input")
       .property("checked",function(d){ return d.display; })
@@ -49,10 +61,14 @@ function createControls () {
         d.types = [];
         createControls();
         d3.selectAll(".tile").each(renderTiles);
+        setTimeout(sortFeatures, 1500);
       });
 
     var types = layerToggle.selectAll(".type")
-      .data(function(d){ return d.types.filter(function(e){ return e.visible; }); });
+      .data(function(d){ 
+        if (!d.display) return [];
+        return d.types.filter(function(e){ return e.visible; }); 
+      });
     var enterTypes = types.enter().append("p").attr("class","type");
     enterTypes.append("input").attr("type","checkbox");
     enterTypes.append("span");
