@@ -1,0 +1,144 @@
+body {
+  margin: 0;
+}
+
+.map {
+  position: relative;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  /*width: 400px;
+  height: 400px;
+  border-radius: 300px;
+  border: 10px solid red;
+  overflow: hidden;*/
+}
+.layer svg {
+  /*width: 400px;
+  height: 400px;*/
+  width: 100%;
+  height: 100%;
+  float: left;
+}
+
+.controls {
+  position: absolute;
+  background: rgba(255,255,255,.9);
+  z-index: 1;
+  padding: 25px;
+}
+.controls .type {
+  line-height: 1.1;
+  margin: 0 0 0 20px;
+  color: #808080;
+}
+.layer-toggle {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.layer-toggle input {
+  margin-right: 5px;
+}
+
+.zoom-container {
+  box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+  border-radius: 4px;
+  width: 26px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+a.zoom {
+  background-color: #fff;
+  border-bottom: 1px solid #ccc;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+  cursor: pointer;
+}
+
+a.zoom:hover {
+  background-color:#f4f4f4;
+}
+
+a.zoom:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+a.zoom:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.tile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+}
+
+.tile path {
+  fill: none;
+  stroke: #fff;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.tile .water-layer, .tile .river, .tile .stream, .tile .canal { fill: none; stroke: #9DD9D2; stroke-width: 1.5px; }
+.tile .water, .tile .ocean { fill: #9DD9D2; }
+.tile .riverbank { fill: #9DD9D2; }
+.tile .water-boundary, .tile .ocean-boundary, .tile .riverbank-boundary { fill: none; stroke: #93cbc4; stroke-width: 0.5px; }
+.tile .transit-layer { stroke: #FB7B7A; stroke-width: 2px; }
+.tile .major-road { stroke: #FB7B7A; stroke-width: 1px; }
+.tile .minor-road { stroke: #999; stroke-width: 0.5px; }
+.tile .highway { stroke: #FA4A48; stroke-width: 1.5px; }
+.tile .buildings-layer { stroke: #987284; stroke-width: 0.15px; }
+.tile .park, .tile .nature-reserve, .tile .wood, .tile .protected-land { fill: #88D18A; stroke: #88D18A; stroke-width: 0.5px; }
+.tile .rail { stroke: #503D3F; stroke-width: 0.5px; }
+.tile .pois-layer, .tile .places-layer { fill: #999; }
+
+.z14 .tile .major-road, .z15 .tile .major-road { stroke-width: 2px; }
+.z14 .tile .highway, .z15 .tile .highway { stroke-width: 3px; }
+
+.z16 .tile .minor-road, .z17 .tile .minor-road { stroke-width: 1.5px; }
+.z16 .tile .major-road, .z17 .tile .major-road { stroke-width: 3px; }
+.z16 .tile .highway, .z17 .tile .highway { stroke-width: 4px; }
+
+.info {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  background: #fff;
+  background: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  padding: 0px 5px;
+  font: 12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+  font-size: 11px;
+}
+
+.info a {
+  text-decoration: none;
+  color: #0078a8;
+}
+
+.info a:hover {
+  text-decoration: underline;
+}
+
+/* For non touch devices, move control out of the way at small window widths */
+@media (max-width: 752px) {
+  /* 767px - 15px for scrollbar */
+  .mapzen-demo-iframed .zoom-container {
+    top: 50px;
+  }
+}

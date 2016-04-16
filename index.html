@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="stylesheet" href="styles.css" />
+<body>
+  <div class="controls">
+  	<a id="exportify">exportify</a>
+    <p>Search for a place:</p>
+    <input type="text" id="search-text" />
+    <input type="submit" id="search-submit" />
+    <p>Choose what to display:</p>
+    <ul class="layer-toggle"></ul>
+  </div>
+<script src="d3.v3.min.js"></script>
+<script src="d3.geo.tile.v0.min.js"></script>
+<script src="https://cdn.rawgit.com/mbostock/topojson/3ed6ee9e04d4/topojson.js"></script>
+<script src='//s3.amazonaws.com/assets-staging.mapzen.com/ui/components/bug/bug.min.js'></script>
+<script type='text/javascript'>
+  window.bugTitle = 'Map using d3 and topojson';
+  
+</script>
+<script src="index.js"></script>
