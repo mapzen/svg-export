@@ -35,6 +35,7 @@ if (window.location.hash) {
     .split("/").map(function(n){ return Number(n); });
 }
 
+//initialize the control panel from the 'layers' data object
 function createControls () {
   var layerToggle = d3.select(".layer-toggle").selectAll(".layer-name").data(layers);
     entering = layerToggle.enter().append("li").attr("class","layer-name");
@@ -67,8 +68,7 @@ function createControls () {
 createControls();
 
 var width = window.innerWidth,
-    height = window.innerHeight,
-    prefix = prefixMatch(["webkit", "ms", "Moz", "O"]);
+    height = window.innerHeight;
 
 var tile = d3.geo.tile()
     .size([width, height]);
@@ -86,7 +86,6 @@ var tilePath = d3.geo.path()
 var zoom = d3.behavior.zoom()
     .scale(projection.scale() * 2 * Math.PI)
     .scaleExtent([1 << 12, 1 << 25]) // 12 to 25 is roughly z4-z5 to z17
-    //sf - 37.7524/-122.4407
     // .translate(projection([-74.0059, 40.7128]) //nyc
     .translate(projection([origin[0], origin[1]]) //la
     // .translate(projection([-122.4407, 37.7524]) //sf
@@ -103,32 +102,6 @@ d3.select("#search-text").on("keydown",function(){
   if (event.keyCode == 13)
     search();
 });
-
-function sortFeatures() {
-  var featureTypes = sortData();
-  featureTypes.forEach(function(l){
-    var layerIndex;
-    layers.forEach(function(d,i){ if (d.layer == l.key) layerIndex = i; });
-    var currentTypes = l.values.map(function(d){ return d.key; });
-    
-    layers[layerIndex].types.forEach(function(d,i){ d.visible = false; });
-
-    l.values.forEach(function(f){
-      var featureIndex = -1;
-      layers[layerIndex].types.forEach(function(d,i){ if (d.type == f.key) featureIndex = i; });
-      if (featureIndex == -1)
-        layers[layerIndex].types.push({
-          type: f.key,
-          display: true,
-          visible: true
-        });
-      else
-        layers[layerIndex].types[featureIndex].visible = true;
-    });
-  });
-
-  createControls();
-}
 
 function search(text) {
   var text = document.getElementById('search-text').value;
@@ -218,6 +191,7 @@ var download = d3.select("#exportify")
   .on("click",exportify);
 var downloadA = download.node();
 
+//use d3 nest to group the entire page's features by type
 function sortData(thorough) {
   var mapData = d3.select("svg").selectAll("path").data();
   var t = d3.nest()
@@ -232,6 +206,34 @@ function sortData(thorough) {
   return t;
 }
 
+//get list of feature types and figure out which are currently visible
+function sortFeatures() {
+  var featureTypes = sortData();
+  featureTypes.forEach(function(l){
+    var layerIndex;
+    layers.forEach(function(d,i){ if (d.layer == l.key) layerIndex = i; });
+    var currentTypes = l.values.map(function(d){ return d.key; });
+    
+    layers[layerIndex].types.forEach(function(d,i){ d.visible = false; });
+
+    l.values.forEach(function(f){
+      var featureIndex = -1;
+      layers[layerIndex].types.forEach(function(d,i){ if (d.type == f.key) featureIndex = i; });
+      if (featureIndex == -1)
+        layers[layerIndex].types.push({
+          type: f.key,
+          display: true,
+          visible: true
+        });
+      else
+        layers[layerIndex].types[featureIndex].visible = true;
+    });
+  });
+
+  createControls();
+}
+
+//process the page's data and download as an .svg
 function exportify() {
 
   var featureTypes = sortData(true);
@@ -285,6 +287,7 @@ function exportify() {
         return d.layer_name + '-layer ' + kind; })
       .attr("d", tilePath);
 
+  //messy way of finding the applicable css styles and inserting them into the file
   var addStyles = [];
   for( var i in document.styleSheets ){
     if(document.styleSheets[i].href && document.styleSheets[i].cssRules) {
@@ -312,12 +315,6 @@ function exportify() {
 function matrix3d(scale, translate) {
   var k = scale / 256, r = scale % 1 ? Number : Math.round;
   return "translate("+r(translate[0] * scale)+","+r(translate[1] * scale)+") scale("+k+")";
-}
-
-function prefixMatch(p) {
-  var i = -1, n = p.length, s = document.body.style;
-  while (++i < n) if (p[i] + "Transform" in s) return "-" + p[i].toLowerCase() + "-";
-  return "";
 }
 
 // zoom controls
@@ -399,116 +396,6 @@ var mzBug = new MapzenBug({
   tweet: 'A D3 vector map demo from @mapzen',
   repo: 'https://github.com/mapzen/d3-vector-tiles'
 });
-
-function groupData(tiles) {
-  var tilePromises = [];
-  var displayLayers = layers.filter(function(d){ return d.display; })
-      .map(function(d){ return d.layer; }),
-    requestLayers = displayLayers.join(",");
-
-  var xhr = this._xhr;
-
-  tiles.forEach(function(d, tileIndex){
-    var zoom = d[2];
-
-    var promise = xhr = d3.promise.json("https://vector.mapzen.com/osm/"+requestLayers+"/" + zoom + "/" + d[0] + "/" + d[1] + ".topojson?api_key=vector-tiles-LM25tq4");
-    tilePromises.push(promise);
-  });
-  var entireData = [];
-
-  Promise.all(tilePromises).then(function(tileData) { 
-    displayLayers.forEach(function(l){
-    var layer = displayLayers.length > 1 ? l : 'vectile';
-
-      var tileGroups = [];
-      tileData.forEach(function(tile, tileIndex){        
-        var data = {};
-        for (var key in tile.objects) {
-          data[key] = topojson.feature(tile, tile.objects[key]);
-        }
-        var features = [];
-    
-        if(data[layer])
-        {
-          for(var i in data[layer].features)
-          {
-            var kind = data[layer].features[i].properties.kind;
-              // Don't include any label placement points
-              if(data[layer].features[i].properties.label_placement == 'yes') { continue }
-              
-              // Don't show large buildings at z13 or below.
-              if(zoom <= 13 && layer == 'buildings') { continue }
-              
-              // Don't show small buildings at z14 or below.
-              if(zoom <= 14 && layer == 'buildings' && data[layer].features[i].properties.area < 2000) { continue }
-
-              if (data[layer].features[i].properties.kind == 'ferry' || data[layer].features[i].properties.kind == 'path') continue;
-
-              data[layer].features[i].layer_name = layer;
-              features.push(data[layer].features[i]);
-          }
-        }
-        if (features.length)
-          tileGroups.push({
-            features: features,
-            transform: tiles[tileIndex]
-          });
-      });
-
-      entireData.push({
-        layer : layer,
-        tiles : tileGroups
-      });
-
-      var mapLayers = svg
-        .attr("transform", matrix3d(tiles.scale, tiles.translate))
-      .selectAll(".mapLayer")
-        .data(entireData);
-
-    mapLayers.exit()
-        .each(function(d) { this._xhr.abort(); })
-        .remove();
-
-    mapLayers.enter().append("g").attr("class","mapLayer");
-
-    mapLayers.attr("id", function(d){ return d.layer; });
-
-    var mapTiles = mapLayers.selectAll(".tile").data(function(d){ return d.tiles; });
-    mapTiles.enter().append("g").attr("class","tile");
-    mapTiles.exit().remove();
-    mapTiles.attr("transform",function(d){ return "translate("+ d.transform[0] * 256 +","+ d.transform[1] * 256 +")"; })
-        .each(function(d){
-
-          var transform = d.transform;
-          var k = Math.pow(2, transform[2]) * 256; // size of the world in pixels
-
-          tilePath.projection()
-              .translate([k / 2 - transform[0] * 256, k / 2 - transform[1] * 256]) // [0°,0°] in pixels
-              .scale(k / 2 / Math.PI)
-              .precision(0);
-
-          var group = d3.select(this);
-          var paths = group.selectAll("path").data(function(d){ return d.features; });
-          paths.enter().append("path");
-          paths.exit().remove();
-          paths.attr("d",tilePath)
-          .attr("class", function(d) {
-            var kind = d.properties.kind || '',
-              kind = kind.replace("_","-");
-            if(d.properties.boundary=='yes')
-              {kind += '_boundary';} 
-            return d.layer_name + '-layer ' + kind; })
-          .attr("id", function(d) {
-            var kind = d.properties.kind || '',
-              kind = kind.replace("_","-");
-            if(d.properties.boundary=='yes')
-              {kind += '_boundary';} 
-            return kind; });
-          });
-
-    });
-  });
-}
 
 function renderTiles(d) {
   var displayLayers = layers.filter(function(d){ return d.display; })
