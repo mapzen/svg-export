@@ -408,9 +408,9 @@ if (('ontouchstart' in window) || (window.DocumentTouch && document instanceof D
 // initialize mapzen bug
 var mzBug = new MapzenBug({
   name: window.bugTitle,
-  link: 'https://github.com/mapzen/d3-vector-tiles',
-  tweet: 'A D3 vector map demo from @mapzen',
-  repo: 'https://github.com/mapzen/d3-vector-tiles'
+  link: 'https://github.com/mapzen/svg-export',
+  tweet: 'An SVG map download tool from @mapzen',
+  repo: 'https://github.com/mapzen/svg-export'
 });
 
 function renderTiles(d) {
