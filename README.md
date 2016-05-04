@@ -2,7 +2,7 @@
 
 This is a tool for taking vector tile data and exporting it to an SVG file. 
 
-Live demo is available here: (http://mapzen.github.io/svg-export/)[http://mapzen.github.io/svg-export/]
+Live demo is available here: http://mapzen.github.io/svg-export/
 
 ## Installation
 
