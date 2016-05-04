@@ -41,7 +41,7 @@ function createControls () {
     entering = layerToggle.enter().append("li").attr("class","layer-name");
     entering.append("input").attr("type","checkbox");
     entering.append("span").text(function(d){ return d.layer; });
-    entering.append("span").attr("class","toggle").text("toggle all");
+    entering.append("span").attr("class","toggle btn btn-transparent").text("toggle all");
 
     layerToggle.select(".toggle")
       .style("display",function(d){ return (d.display && d.types.length) ? "block" : "none"; })
@@ -249,85 +249,6 @@ function sortFeatures() {
   createControls();
 }
 
-//process the page's data and download as an .svg
-function exportify() {
-
-  var featureTypes = sortData(true);
-
-  featureTypes.forEach(function(l){
-    var featureData;
-    layers.forEach(function(t){ if (t.layer == l.key) featureData = t.types; });
-    if (!featureData) return;
-    featureData.forEach(function(t){
-      if (!t.display) {
-        l.values.forEach(function(f,i){ if (f.key == t.type || f.key == t.type+"_boundary") l.values.splice(i,1); })
-      }
-    });
-  });
-
-  var svg2 = map.append("svg")
-    .attr("width",width).attr("height",height)
-    .attr("style","position:absolute; top: 10000px; left: 10000px;")
-    .attr("id","svg-download");
-
-
-    var tiles = tile.scale(zoom.scale()).translate(zoom.translate())(),
-      top = tiles[0],
-      k = Math.pow(2, top[2]) * 256; // size of the world in pixels
-
-    tilePath.projection()
-        .translate([k / 2 - top[0] * 256, k / 2 - top[1] * 256]) // [0°,0°] in pixels
-        .scale(k / 2 / Math.PI)
-        .precision(0);
-
-    var featureList = ["svg", "tile"];
-
-    var layerType = svg2.selectAll(".tile").data(featureTypes);
-    layerType.enter().append("g").attr("class","tile").attr("id",function(d){ return d.key; });
-    layerType.exit().remove();
-
-    var features = layerType.selectAll(".feature-type")
-      .data(function(d){ return d.values; });
-    features.enter().append("g").attr("class","feature-type");
-    features.attr("id",function(d){ featureList.push(d.key.replace("_","-")); return d.key; });
-    features.exit().remove();
-
-    var paths = features.selectAll("path").data(function(d){ return d.values; });
-    paths.enter().append("path");
-    paths.exit().remove();
-    paths.attr("class", function(d) {
-        var kind = d.properties.kind || '',
-          kind = kind.replace("_","-");
-        if(d.properties.boundary=='yes')
-          {kind += '_boundary';} 
-        return d.layer_name + '-layer ' + kind; })
-      .attr("d", tilePath);
-
-  //messy way of finding the applicable css styles and inserting them into the file
-  var addStyles = [];
-  for( var i in document.styleSheets ){
-    if(document.styleSheets[i].href && document.styleSheets[i].cssRules) {
-      var rules = document.styleSheets[i].cssRules;
-      for (var r in rules) {
-        var cssText = rules[r].cssText;
-        featureList.forEach(function(f){
-          if (cssText && cssText.indexOf(f) != -1)
-            addStyles.push(cssText);
-        })
-      };
-    }
-  }
-
-  var styleTag = '<style type="text/css">' + addStyles.join("\n") + "</style>"
-
-  var svgText = '<svg xmlns="http://www.w3.org/2000/svg">' + styleTag + "<svg>" + document.getElementById("svg-download").innerHTML + "</svg></svg>";
-  var blob = new Blob([svgText], {type: 'text/xml'});
-  var url = URL.createObjectURL(blob);
-  downloadA.href = url;
-
-  svg2.remove();
-}
-
 function matrix3d(scale, translate) {
   var k = scale / 256, r = scale % 1 ? Number : Math.round;
   return "translate("+r(translate[0] * scale)+","+r(translate[1] * scale)+") scale("+k+")";
@@ -482,4 +403,83 @@ function renderTiles(d) {
       .attr("d", tilePath)
       .style("display",function(d){ return d.display ? "block" : "none"; });
   });
-};
+}
+
+//process the page's data and download as an .svg
+function exportify() {
+
+  var featureTypes = sortData(true);
+
+  featureTypes.forEach(function(l){
+    var featureData;
+    layers.forEach(function(t){ if (t.layer == l.key) featureData = t.types; });
+    if (!featureData) return;
+    featureData.forEach(function(t){
+      if (!t.display) {
+        l.values.forEach(function(f,i){ if (f.key == t.type || f.key == t.type+"_boundary") l.values.splice(i,1); })
+      }
+    });
+  });
+
+  var svg2 = map.append("svg")
+    .attr("width",width).attr("height",height)
+    .attr("style","position:absolute; top: 10000px; left: 10000px;")
+    .attr("id","svg-download");
+
+
+    var tiles = tile.scale(zoom.scale()).translate(zoom.translate())(),
+      top = tiles[0],
+      k = Math.pow(2, top[2]) * 256; // size of the world in pixels
+
+    tilePath.projection()
+        .translate([k / 2 - top[0] * 256, k / 2 - top[1] * 256]) // [0°,0°] in pixels
+        .scale(k / 2 / Math.PI)
+        .precision(0);
+
+    var featureList = ["svg", "tile"];
+
+    var layerType = svg2.selectAll(".tile").data(featureTypes);
+    layerType.enter().append("g").attr("class","tile").attr("id",function(d){ return d.key; });
+    layerType.exit().remove();
+
+    var features = layerType.selectAll(".feature-type")
+      .data(function(d){ return d.values; });
+    features.enter().append("g").attr("class","feature-type");
+    features.attr("id",function(d){ featureList.push(d.key.replace("_","-")); return d.key; });
+    features.exit().remove();
+
+    var paths = features.selectAll("path").data(function(d){ return d.values; });
+    paths.enter().append("path");
+    paths.exit().remove();
+    paths.attr("class", function(d) {
+        var kind = d.properties.kind || '',
+          kind = kind.replace("_","-");
+        if(d.properties.boundary=='yes')
+          {kind += '_boundary';} 
+        return d.layer_name + '-layer ' + kind; })
+      .attr("d", tilePath);
+
+  //messy way of finding the applicable css styles and inserting them into the file
+  var addStyles = [];
+  for( var i in document.styleSheets ){
+    if(document.styleSheets[i].href && document.styleSheets[i].cssRules) {
+      var rules = document.styleSheets[i].cssRules;
+      for (var r in rules) {
+        var cssText = rules[r].cssText;
+        featureList.forEach(function(f){
+          if (cssText && cssText.indexOf(f) != -1)
+            addStyles.push(cssText);
+        })
+      };
+    }
+  }
+
+  var styleTag = '<style type="text/css">' + addStyles.join("\n") + "</style>"
+
+  var svgText = '<svg xmlns="http://www.w3.org/2000/svg">' + styleTag + "<svg>" + document.getElementById("svg-download").innerHTML + "</svg></svg>";
+  var blob = new Blob([svgText], {type: 'text/xml'});
+  var url = URL.createObjectURL(blob);
+  downloadA.href = url;
+
+  svg2.remove();
+}

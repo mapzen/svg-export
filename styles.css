@@ -21,7 +21,7 @@ body {
   position: absolute;
   background: rgba(255,255,255,.9);
   z-index: 1;
-  padding: 25px;
+  padding: 20px;
   height: 100%;
   overflow: scroll;
   box-sizing: border-box;
@@ -33,6 +33,11 @@ body {
 }
 .controls .toggle {
   float: right;
+  padding: 2px 8px;
+  opacity: .5;
+}
+.controls .toggle:hover {
+  opacity: 1;
 }
 .layer-toggle {
   list-style-type: none;
