@@ -17,6 +17,11 @@ body {
   height: 100%;
 }
 
+.form-group {
+  margin: 30px 0;
+  height: 40px;
+}
+
 .controls {
   position: absolute;
   background: rgba(255,255,255,.9);
