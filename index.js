@@ -53,7 +53,7 @@ function createControls () {
         createControls();
         d3.selectAll(".tile").each(renderTiles);
       });
-    
+
     layerToggle.select("input")
       .property("checked",function(d){ return d.display; })
       .on("change",function(d){
@@ -65,9 +65,9 @@ function createControls () {
       });
 
     var types = layerToggle.selectAll(".type")
-      .data(function(d){ 
+      .data(function(d){
         if (!d.display) return [];
-        return d.types.filter(function(e){ return e.visible; }); 
+        return d.types.filter(function(e){ return e.visible; });
       });
     var enterTypes = types.enter().append("p").attr("class","type");
     enterTypes.append("input").attr("type","checkbox");
@@ -182,7 +182,7 @@ function zoomed() {
   var zoomLevel = tiles[0][2],
   mapCenter = projection.invert([width/2, height/2]);
 
-  // adding zoom level as a class  
+  // adding zoom level as a class
   d3.select(".layer").attr("class",function(){ return "layer z"+zoomLevel; });
   // url hash for the location
   window.location.hash = [mapCenter[0].toFixed(5), mapCenter[1].toFixed(5), zoomLevel].join("/");
@@ -212,7 +212,7 @@ function sortData(thorough) {
   var mapData = d3.select("svg").selectAll("path").data();
   var t = d3.nest()
     .key(function(d){ return d.layer_name; })
-    .key(function(d){ 
+    .key(function(d){
       var kind = d.properties.kind;
       if (thorough && d.properties.boundary=='yes')
         kind += '_boundary';
@@ -229,7 +229,7 @@ function sortFeatures() {
     var layerIndex;
     layers.forEach(function(d,i){ if (d.layer == l.key) layerIndex = i; });
     var currentTypes = l.values.map(function(d){ return d.key; });
-    
+
     layers[layerIndex].types.forEach(function(d,i){ d.visible = false; });
 
     l.values.forEach(function(f){
@@ -341,19 +341,19 @@ function renderTiles(d) {
 
   var svg = d3.select(this);
   var zoom = d[2];
-  this._xhr = d3.json("https://vector.mapzen.com/osm/"+requestLayers+"/" + zoom + "/" + d[0] + "/" + d[1] + ".topojson?api_key=vector-tiles-LM25tq4", function(error, json) {
+  this._xhr = d3.json("https://tile.mapzen.com/mapzen/vector/v1/"+requestLayers+"/" + zoom + "/" + d[0] + "/" + d[1] + ".topojson?api_key=vector-tiles-LM25tq4", function(error, json) {
     var k = Math.pow(2, d[2]) * 256; // size of the world in pixels
 
     tilePath.projection()
         .translate([k / 2 - d[0] * 256, k / 2 - d[1] * 256]) // [0°,0°] in pixels
         .scale(k / 2 / Math.PI)
         .precision(0);
-    
+
     var data = {};
     for (var key in json.objects) {
       data[key] = topojson.feature(json, json.objects[key]);
     }
-  
+
     // build up a single concatenated array of all tile features from all tile layers
     var features = [];
     layers.forEach(function(l){
@@ -387,10 +387,10 @@ function renderTiles(d) {
         }
       }
     });
-    
+
     // put all the features into SVG paths
     var paths = svg.selectAll("path")
-      .data(features.sort(function(a, b) { 
+      .data(features.sort(function(a, b) {
         return a.properties.sort_key ? a.properties.sort_key - b.properties.sort_key : 0 }));
     paths.enter().append("path");
     paths.exit().remove();
@@ -398,7 +398,7 @@ function renderTiles(d) {
         var kind = d.properties.kind || '',
           kind = kind.replace("_","-");
         if(d.properties.boundary=='yes')
-          {kind += '_boundary';} 
+          {kind += '_boundary';}
         return d.layer_name + '-layer ' + kind; })
       .attr("d", tilePath)
       .style("display",function(d){ return d.display ? "block" : "none"; });
@@ -455,7 +455,7 @@ function exportify() {
         var kind = d.properties.kind || '',
           kind = kind.replace("_","-");
         if(d.properties.boundary=='yes')
-          {kind += '_boundary';} 
+          {kind += '_boundary';}
         return d.layer_name + '-layer ' + kind; })
       .attr("d", tilePath);
 
