@@ -1,5 +1,11 @@
 # Export Tool for Vector Tiles to SVG
 
+⚠️ Mapzen is not currently supporting this code. ⚠️
+
+We may not be able to answer questions about `svg-export`. If you’re looking for an active project with SVG exporting functionality for Mapzen Vector Tiles, please check out https://github.com/hanbyul-here/svg-exporter for an excellent alternative.
+
+----
+
 This is a tool for taking vector tile data and exporting it to an SVG file. 
 
 Live demo is available here: http://mapzen.github.io/svg-export/
